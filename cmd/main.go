@@ -9,20 +9,12 @@ import (
 	"strings"
 
 	"golang.org/x/tools/godoc/util"
-
-	goflags "github.com/jessevdk/go-flags"
 )
-
-type Flags struct {
-	//Color           string `short:"c" description:"use specific color"` // needs work
-	CaseInsensitive bool `short:"i" description:"Case insensitive matching"`
-	WordBoundary    bool `short:"w" description:"word boundary matching"`
-	Help            bool `short:"h" long:"help" description:"display this help"`
-}
 
 type pattern struct {
 	re     *regexp.Regexp
 	negate bool
+	color  string
 }
 
 func die(msg string, args ...interface{}) {
@@ -35,37 +27,36 @@ func main() {
 	if len(os.Args) > 0 {
 		progName = os.Args[0]
 	}
-	usage := fmt.Sprintf("%s [options] <pattern> [[-i] [-v] <pattern> [...]]", progName)
-
-	flags := Flags{}
-	p := goflags.NewNamedParser("", goflags.PrintErrors|goflags.PassDoubleDash|goflags.PassAfterNonOption)
-	p.AddGroup(usage, "", &flags)
-	args, err := p.ParseArgs(os.Args[1:])
-	if err != nil {
-		die("failed to parse flags: %s\n", err)
-	}
-	if flags.Help {
-		p.WriteHelp(os.Stdout)
-		os.Exit(0)
-	}
 
 	var patterns []*pattern
 	negate := false
 	insensitive := false
 	ignoreDashes := false
 	wordBoundary := false
-	for _, arg := range args {
+	showHelp := false
+	colorNext := false
+	var color string
+	for _, arg := range os.Args[1:] {
 		if len(arg) == 0 {
 			die("empty args are not supported\n")
+		}
+		if colorNext {
+			color = arg
+			colorNext = false
+			continue
 		}
 		if arg[0] == '-' && !ignoreDashes {
 			for _, short := range arg[1:] {
 				switch short {
+				case 'h':
+					showHelp = true
 				case 'i':
 					if insensitive {
 						die("two -i's in a row not supported\n")
 					}
 					insensitive = true
+				case 'c':
+					colorNext = true
 				case 'v':
 					if negate {
 						die("two -v's in a row not supported\n")
@@ -84,10 +75,10 @@ func main() {
 			}
 			continue
 		}
-		if flags.WordBoundary || wordBoundary {
+		if wordBoundary {
 			arg = "\\b" + arg + "\\b"
 		}
-		if flags.CaseInsensitive || insensitive {
+		if insensitive {
 			arg = "(?i)" + arg
 		}
 		r, err := regexp.Compile(arg)
@@ -97,11 +88,23 @@ func main() {
 		patterns = append(patterns, &pattern{
 			re:     r,
 			negate: negate,
+			color:  color,
 		})
 		negate = false
 		insensitive = false
 		wordBoundary = false
 		ignoreDashes = false
+		color = ""
+	}
+
+	if showHelp {
+		fmt.Printf(
+			"%s [options] <pattern> [[-i] [-v] [-c <color>] <pattern> [...]]\n"+
+				"  -i          case insensitive matching\n"+
+				"  -w          word boundary matching\n"+
+				"  -c <color>  color to highlight match\n"+
+				"  -h, --help  display this help\n", progName)
+		os.Exit(0)
 	}
 
 	colors := map[string]string{
@@ -147,6 +150,13 @@ func main() {
 		l := scanner.Text()
 		for i, pat := range patterns {
 			col := getColor(i)
+			if pat.color != "" {
+				var ok bool
+				col, ok = colors[pat.color]
+				if !ok {
+					die("color %s not found", pat.color)
+				}
+			}
 			l = pat.re.ReplaceAllString(l, col+"$0"+nc)
 		}
 		fmt.Println(l)
