@@ -84,7 +84,7 @@ release:
     WORKDIR /release
     COPY +colorgrep-linux/colorgrep ./colorgrep-linux-amd64
     COPY +colorgrep-darwin/colorgrep ./colorgrep-darwin-amd64
-    ARG RELEASE_TAG
+    ARG --required RELEASE_TAG
     ARG EARTHLY_GIT_HASH
     ARG BODY="No details provided"
     RUN --secret GITHUB_TOKEN=+secrets/GITHUB_TOKEN test -n "$GITHUB_TOKEN"
