@@ -30,3 +30,6 @@ Then run:
 
 builds are written to `build/ubuntu/colorgrep` and `build/alpine/colorgrep`
 
+
+## Licensing
+colorgrep is licensed under the Mozilla Public License Version 2.0. See [LICENSE](LICENSE).
