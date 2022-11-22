@@ -1,30 +1,100 @@
 VERSION 0.6
-
-FROM alpine:3.12
+FROM alpine:3.16
 
 deps:
-    ARG DISTRO
-    IF [ "$DISTRO" = "alpine" ]
-        FROM golang:1.16-alpine3.14
-    ELSE IF [ "$DISTRO" = "ubuntu" ]
-        FROM golang:1.16-bullseye
-    ELSE
-        RUN --no-cache echo "$DISTRO not supported" && false
-    END
+    FROM golang:1.19-alpine3.16
+    RUN apk add --update --no-cache \
+        bash \
+        bash-completion \
+        binutils \
+        ca-certificates \
+        coreutils \
+        curl \
+        findutils \
+        g++ \
+        git \
+        grep \
+        less \
+        make \
+        openssl \
+        util-linux
+
+    RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.0
+    # no external dependencies, so no need to call go mod download
     WORKDIR /code
-    COPY go.mod go.sum ./
-    RUN go mod download
-    # Output these back in case go mod download changes them.
-    SAVE ARTIFACT go.mod AS LOCAL go.mod
-    SAVE ARTIFACT go.sum AS LOCAL go.sum
+    COPY go.mod .
 
-build:
-    ARG DISTRO="alpine"
-    FROM +deps --DISTRO="$DISTRO"
-    COPY --dir cmd .
-    RUN go build -o build/colorgrep cmd/main.go
-    RUN test -n "$DISTRO"
-    SAVE ARTIFACT build/colorgrep /go-example AS LOCAL build/$DISTRO/colorgrep
+    # otherwise, this would be needed
+    #COPY go.mod go.sum .
+    #RUN go mod download
+    #SAVE ARTIFACT go.mod AS LOCAL go.mod
+    #SAVE ARTIFACT go.sum AS LOCAL go.sum
 
-all:
-    BUILD +build --DISTRO=alpine --DISTRO=ubuntu
+code:
+    FROM +deps
+    COPY --dir cmd ./
+    SAVE IMAGE
+
+lint:
+    FROM +code
+    COPY ./.golangci.yaml ./
+    RUN golangci-lint run
+
+colorgrep:
+    FROM +code
+    ARG RELEASE_TAG="dev"
+    ARG GOOS
+    ARG GO_EXTRA_LDFLAGS
+    ARG GOARCH
+    RUN test -n "$GOOS" && test -n "$GOARCH"
+    ARG GOCACHE=/go-cache
+    RUN mkdir -p build
+    RUN --mount=type=cache,target=$GOCACHE \
+        go build \
+            -o build/colorgrep \
+            -ldflags "-X main.Version=$RELEASE_TAG $GO_EXTRA_LDFLAGS" \
+            cmd/main.go
+    SAVE ARTIFACT build/colorgrep AS LOCAL "build/$GOOS/$GOARCH/colorgrep"
+
+colorgrep-darwin:
+    COPY \
+        --build-arg GOOS=darwin \
+        --build-arg GOARCH=amd64 \
+        --build-arg GO_EXTRA_LDFLAGS= \
+        +colorgrep/colorgrep /build/colorgrep
+    SAVE ARTIFACT /build/colorgrep AS LOCAL "build/darwin/amd64/colorgrep"
+
+colorgrep-linux:
+    COPY \
+        --build-arg GOOS=linux \
+        --build-arg GOARCH=amd64 \
+        --build-arg GO_EXTRA_LDFLAGS="-linkmode external -extldflags -static" \
+        +colorgrep/colorgrep /build/colorgrep
+    SAVE ARTIFACT /build/colorgrep AS LOCAL "build/linux/amd64/colorgrep"
+
+colorgrep-all:
+    COPY +colorgrep-linux/root/colorgrep ./colorgrep-linux-amd64
+    COPY +colorgrep-darwin/colorgrep ./colorgrep-darwin-amd64
+    SAVE ARTIFACT ./*
+
+
+release:
+    FROM node:13.10.1-alpine3.11
+    RUN npm install -g github-release-cli@v1.3.1
+    WORKDIR /release
+    COPY +colorgrep-linux/colorgrep ./colorgrep-linux-amd64
+    COPY +colorgrep-darwin/colorgrep ./colorgrep-darwin-amd64
+    ARG RELEASE_TAG
+    ARG EARTHLY_GIT_HASH
+    ARG BODY="No details provided"
+    RUN --secret GITHUB_TOKEN=+secrets/GITHUB_TOKEN test -n "$GITHUB_TOKEN"
+    RUN --push \
+        --secret GITHUB_TOKEN=+secrets/GITHUB_TOKEN \
+        github-release upload \
+        --owner alexcb \
+        --repo colorgrep \
+        --commitish "$EARTHLY_GIT_HASH" \
+        --tag "$RELEASE_TAG" \
+        --name "$RELEASE_TAG" \
+        --body "$BODY" \
+        ./colorgrep-*
