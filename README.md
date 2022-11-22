@@ -14,8 +14,8 @@ builds are written to `build/ubuntu/colorgrep` and `build/alpine/colorgrep`
 
 ## Example use
 
-    build/alpine/colorgrep pattern1 pattern2
+    cat fruit.txt | colorgrep -c yellow berry -c green -i '^ap.*e$'
 
-## Futurework
+Which will highlight matches:
 
-- support a `--color=<color-name>` flag which will force the highlighted pattern to be a specific color
+    ![screenshot](screenshot.png)
