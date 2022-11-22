@@ -3,18 +3,13 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
-	"strings"
-
-	"golang.org/x/tools/godoc/util"
 )
 
 type pattern struct {
-	re     *regexp.Regexp
-	negate bool
-	color  string
+	re    *regexp.Regexp
+	color string
 }
 
 func die(msg string, args ...interface{}) {
@@ -29,7 +24,6 @@ func main() {
 	}
 
 	var patterns []*pattern
-	negate := false
 	insensitive := false
 	ignoreDashes := false
 	wordBoundary := false
@@ -57,11 +51,6 @@ func main() {
 					insensitive = true
 				case 'c':
 					colorNext = true
-				case 'v':
-					if negate {
-						die("two -v's in a row not supported\n")
-					}
-					negate = true
 				case 'w':
 					if wordBoundary {
 						die("two -w's in a row not supported\n")
@@ -86,11 +75,9 @@ func main() {
 			die("%s is not a valid regexp: %s\n", arg, err.Error())
 		}
 		patterns = append(patterns, &pattern{
-			re:     r,
-			negate: negate,
-			color:  color,
+			re:    r,
+			color: color,
 		})
-		negate = false
 		insensitive = false
 		wordBoundary = false
 		ignoreDashes = false
@@ -99,11 +86,12 @@ func main() {
 
 	if showHelp {
 		fmt.Printf(
-			"%s [options] <pattern> [[-i] [-v] [-c <color>] <pattern> [...]]\n"+
-				"  -i          case insensitive matching\n"+
-				"  -w          word boundary matching\n"+
-				"  -c <color>  color to highlight match\n"+
-				"  -h, --help  display this help\n", progName)
+			"%s [options] <pattern> [[-i] [-w] [-c <color>] <pattern> [...]]\n"+
+				"  -i           case insensitive matching\n"+
+				"  -w           word boundary matching\n"+
+				"  -c <color>   color to highlight match\n"+
+				"  -e <pattern> use pattern (useful for patterns starting with a hyphen)\n"+
+				"  -h, --help   display this help\n", progName)
 		os.Exit(0)
 	}
 
@@ -165,45 +153,4 @@ func main() {
 	if err := scanner.Err(); err != nil {
 		die("%s\n", err)
 	}
-}
-
-func grepFile(path string, patterns []*pattern) error {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	if !util.IsText(data) {
-		return nil
-	}
-
-	lines := strings.Split(string(data), "\n")
-	numLines := len(lines)
-	numRegexps := len(patterns)
-	matches := make([]bool, numLines*numRegexps)
-	for i, line := range lines {
-		for j, pat := range patterns {
-			k := i*numRegexps + j
-			match := pat.re.Match([]byte(line))
-			matches[k] = match != pat.negate // xor
-		}
-	}
-
-	// TODO make use of context size; for now just print the file if all patterns are found.
-
-	var numUniqRegFound int
-	regFound := make([]bool, numRegexps)
-	for i := 0; i < numLines; i++ {
-		for j := 0; j < numRegexps; j++ {
-			k := i*numRegexps + j
-			if matches[k] && !regFound[j] {
-				regFound[j] = true
-				numUniqRegFound++
-			}
-		}
-	}
-	if numUniqRegFound == numRegexps {
-		fmt.Println(path)
-	}
-
-	return nil
 }
