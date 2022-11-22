@@ -18,4 +18,4 @@ builds are written to `build/ubuntu/colorgrep` and `build/alpine/colorgrep`
 
 Which will highlight matches:
 
-    ![screenshot](screenshot.png)
+![screenshot](screenshot.png)
