@@ -4,10 +4,13 @@ Reads from stdin and highlights any matched patterns
 
 ## Usage
 
-    colorgrep [options] <pattern> [[-i] [-v] <pattern> [...]]
-      -i          Case insensitive matching
-      -w          word boundary matching
-      -h, --help  display this help
+    colorgrep [options] <pattern> [[-i] [-w] [-c <color>] <pattern> [...]]
+      -i           case insensitive matching
+      -w           word boundary matching
+      -c <color>   color to highlight match
+      -e <pattern> use pattern (useful for patterns starting with a hyphen)
+      -h, --help   display this help
+
 
 ## Example
 
