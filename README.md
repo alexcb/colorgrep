@@ -20,6 +20,24 @@ Which will highlight matches:
 
 ![screenshot](screenshot.png)
 
+## Download
+
+intel-linux users:
+
+    sudo /bin/sh -c ' wget https://github.com/alexcb/colorgrep/releases/latest/download/colorgrep-linux-amd64 -O /usr/local/bin/colorgrep && chmod +x /usr/local/bin/colorgrep'
+
+raspberrypi-v4-linux users:
+
+    sudo /bin/sh -c ' wget https://github.com/alexcb/colorgrep/releases/latest/download/colorgrep-linux-arm64 -O /usr/local/bin/colorgrep && chmod +x /usr/local/bin/colorgrep'
+
+intel-mac users:
+
+    sudo /bin/sh -c ' wget https://github.com/alexcb/colorgrep/releases/latest/download/colorgrep-darwin-amd64 -O /usr/local/bin/colorgrep && chmod +x /usr/local/bin/colorgrep'
+
+m1/2-mac users:
+
+    sudo /bin/sh -c ' wget https://github.com/alexcb/colorgrep/releases/latest/download/colorgrep-darwin-arm64 -O /usr/local/bin/colorgrep && chmod +x /usr/local/bin/colorgrep'
+
 ## Building
 
 First download [earthly](https://github.com/earthly/earthly).
