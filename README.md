@@ -20,7 +20,7 @@ Which will highlight matches:
 
 ![screenshot](screenshot.png)
 
-## Download
+## Installation
 
 intel-linux users:
 
