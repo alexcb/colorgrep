@@ -4,17 +4,21 @@ Reads from stdin and highlights any matched patterns
 
 ## Usage
 
-    colorgrep [options] <pattern> [[-i] [-w] [-c <color>] <pattern> [...]]
+    usage: colorgrep [options] <pattern> [[-i] [-w] [-c <color>] <pattern> [...]] [-- <file>]
+    
+    Reads from stdin (or <file> when specified), any regex patterns which match will cause the text to be highlighted.
+    
       -i           case insensitive matching
       -w           word boundary matching
-      -c <color>   color to highlight match
+      -c <color>   color to highlight match: blue, cyan, darkgray, green, lightblue, lightcyan, lightgray, lightgreen, lightpurple, lightred, orange, purple, red, yellow
       -e <pattern> use pattern (useful for patterns starting with a hyphen)
       -h, --help   display this help
 
 
+
 ## Example
 
-    cat fruit.txt | colorgrep -c yellow berry -c green -i '^ap.*e$'
+    colorgrep -c yellow berry -c green -i '^ap.*e$' -- fruit.txt
 
 Which will highlight matches:
 
