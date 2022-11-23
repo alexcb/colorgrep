@@ -26,9 +26,9 @@ First download [earthly](https://github.com/earthly/earthly).
 
 Then run:
 
-    earthly +all
+    earthly +colorgrep-all
 
-builds are written to `build/ubuntu/colorgrep` and `build/alpine/colorgrep`
+builds are written to `build/<OS>/<arch>/colorgrep` (where `OS` is either `linux` or `darwin` (MacOS), and `arch` is either `amd64` (intel-based) or `arm64` (M1, raspberry pi v4, etc))
 
 
 ## Licensing

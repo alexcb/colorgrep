@@ -90,12 +90,10 @@ colorgrep-linux-arm64:
     SAVE ARTIFACT /build/colorgrep AS LOCAL "build/linux/amd64/colorgrep"
 
 colorgrep-all:
-    COPY +colorgrep-linux-amd64/root/colorgrep ./colorgrep-linux-amd64
-    COPY +colorgrep-linux-arm64/root/colorgrep ./colorgrep-linux-arm64
-    COPY +colorgrep-darwin-amd64/colorgrep ./colorgrep-darwin-amd64
-    COPY +colorgrep-darwin-arm64/colorgrep ./colorgrep-darwin-arm64
-    SAVE ARTIFACT ./*
-
+    BUILD +colorgrep-linux-amd64
+    BUILD +colorgrep-linux-arm64
+    BUILD +colorgrep-darwin-amd64
+    BUILD +colorgrep-darwin-arm64
 
 release:
     FROM node:13.10.1-alpine3.11
