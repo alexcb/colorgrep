@@ -49,6 +49,7 @@ colorgrep:
     RUN test -n "$GOOS" && test -n "$GOARCH"
     ARG GOCACHE=/go-cache
     RUN mkdir -p build
+    ENV CGO_ENABLED=0
     RUN --mount=type=cache,target=$GOCACHE \
         go build \
             -o build/colorgrep \
@@ -56,7 +57,7 @@ colorgrep:
             cmd/main.go
     SAVE ARTIFACT build/colorgrep AS LOCAL "build/$GOOS/$GOARCH/colorgrep"
 
-colorgrep-darwin:
+colorgrep-darwin-amd64:
     COPY \
         --build-arg GOOS=darwin \
         --build-arg GOARCH=amd64 \
@@ -64,7 +65,15 @@ colorgrep-darwin:
         +colorgrep/colorgrep /build/colorgrep
     SAVE ARTIFACT /build/colorgrep AS LOCAL "build/darwin/amd64/colorgrep"
 
-colorgrep-linux:
+colorgrep-darwin-arm64:
+    COPY \
+        --build-arg GOOS=darwin \
+        --build-arg GOARCH=arm64 \
+        --build-arg GO_EXTRA_LDFLAGS= \
+        +colorgrep/colorgrep /build/colorgrep
+    SAVE ARTIFACT /build/colorgrep AS LOCAL "build/darwin/amd64/colorgrep"
+
+colorgrep-linux-amd64:
     COPY \
         --build-arg GOOS=linux \
         --build-arg GOARCH=amd64 \
@@ -72,9 +81,19 @@ colorgrep-linux:
         +colorgrep/colorgrep /build/colorgrep
     SAVE ARTIFACT /build/colorgrep AS LOCAL "build/linux/amd64/colorgrep"
 
+colorgrep-linux-arm64:
+    COPY \
+        --build-arg GOOS=linux \
+        --build-arg GOARCH=arm64 \
+        --build-arg GO_EXTRA_LDFLAGS= \
+        +colorgrep/colorgrep /build/colorgrep
+    SAVE ARTIFACT /build/colorgrep AS LOCAL "build/linux/amd64/colorgrep"
+
 colorgrep-all:
-    COPY +colorgrep-linux/root/colorgrep ./colorgrep-linux-amd64
-    COPY +colorgrep-darwin/colorgrep ./colorgrep-darwin-amd64
+    COPY +colorgrep-linux-amd64/root/colorgrep ./colorgrep-linux-amd64
+    COPY +colorgrep-linux-arm64/root/colorgrep ./colorgrep-linux-arm64
+    COPY +colorgrep-darwin-amd64/colorgrep ./colorgrep-darwin-amd64
+    COPY +colorgrep-darwin-arm64/colorgrep ./colorgrep-darwin-arm64
     SAVE ARTIFACT ./*
 
 
@@ -82,8 +101,10 @@ release:
     FROM node:13.10.1-alpine3.11
     RUN npm install -g github-release-cli@v1.3.1
     WORKDIR /release
-    COPY +colorgrep-linux/colorgrep ./colorgrep-linux-amd64
-    COPY +colorgrep-darwin/colorgrep ./colorgrep-darwin-amd64
+    COPY +colorgrep-linux-amd64/colorgrep ./colorgrep-linux-amd64
+    COPY +colorgrep-linux-arm64/colorgrep ./colorgrep-linux-arm64
+    COPY +colorgrep-darwin-amd64/colorgrep ./colorgrep-darwin-amd64
+    COPY +colorgrep-darwin-arm64/colorgrep ./colorgrep-darwin-arm64
     ARG --required RELEASE_TAG
     ARG EARTHLY_GIT_HASH
     ARG BODY="No details provided"
