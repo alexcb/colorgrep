@@ -6,7 +6,7 @@ Reads from stdin and highlights any matched patterns
 
     usage: colorgrep [options] <pattern> [[-i] [-w] [-c <color>] <pattern> [...]] [-- <file>]
     
-    Reads from stdin (or <file> when specified), any regex patterns which match will cause the text to be highlighted.
+    Reads from stdin (or <file> when specified), any RE2 patterns which match will cause the text to be highlighted.
     
       -i           case insensitive matching
       -w           word boundary matching

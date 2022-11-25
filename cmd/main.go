@@ -162,7 +162,7 @@ func main() {
 		fmt.Printf(
 			"usage: %s [options] <pattern> [[-i] [-w] [-c <color>] <pattern> [...]] [-- <file>]\n"+
 				"\n"+
-				"Reads from stdin (or <file> when specified), any regex patterns which match will cause the text to be highlighted.\n"+
+				"Reads from stdin (or <file> when specified), any RE2 patterns which match will cause the text to be highlighted.\n"+
 				"\n"+
 				"  -i           case insensitive matching\n"+
 				"  -w           word boundary matching\n"+
