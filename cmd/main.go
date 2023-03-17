@@ -79,6 +79,7 @@ func main() {
 	ignoreDashes := false
 	wordBoundary := false
 	showHelp := false
+	stripes := false
 	colorNext := false
 	fileNext := false
 	file := ""
@@ -123,9 +124,12 @@ func main() {
 				case 'e':
 					ignoreDashes = true
 				case '-':
+					// long flags
 					switch arg[2:] {
 					case "help":
 						showHelp = true
+					case "stripes":
+						stripes = true
 					case "":
 						fileNext = true
 					default:
@@ -168,6 +172,7 @@ func main() {
 				"  -w           word boundary matching\n"+
 				"  -c <color>   color to highlight match: %s\n"+
 				"  -e <pattern> use pattern (useful for patterns starting with a hyphen)\n"+
+				"  --stripes    color each line background with alternating colors (experimental)\n"+
 				"  -h, --help   display this help\n", progName, colorOptions)
 		os.Exit(0)
 	}
@@ -188,6 +193,7 @@ func main() {
 	} else {
 		scanner = bufio.NewScanner(os.Stdin)
 	}
+	lineNum := 0
 	for scanner.Scan() {
 		l := scanner.Text()
 		for i, pat := range patterns {
@@ -201,7 +207,18 @@ func main() {
 			}
 			l = pat.re.ReplaceAllString(l, col+"$0"+nc)
 		}
-		fmt.Println(l)
+
+		if stripes {
+			// tabs dont get colored, convert to spaces
+			l = strings.Replace(l, "\t", "        ", -1)
+		}
+
+		if lineNum%2 == 1 && stripes {
+			fmt.Println("\033[43m" + l + nc)
+		} else {
+			fmt.Println(l)
+		}
+		lineNum++
 	}
 
 	if err := scanner.Err(); err != nil {
