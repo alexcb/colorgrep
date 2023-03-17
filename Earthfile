@@ -71,7 +71,7 @@ colorgrep-darwin-arm64:
         --build-arg GOARCH=arm64 \
         --build-arg GO_EXTRA_LDFLAGS= \
         +colorgrep/colorgrep /build/colorgrep
-    SAVE ARTIFACT /build/colorgrep AS LOCAL "build/darwin/amd64/colorgrep"
+    SAVE ARTIFACT /build/colorgrep AS LOCAL "build/darwin/arm64/colorgrep"
 
 colorgrep-linux-amd64:
     COPY \
@@ -87,7 +87,7 @@ colorgrep-linux-arm64:
         --build-arg GOARCH=arm64 \
         --build-arg GO_EXTRA_LDFLAGS= \
         +colorgrep/colorgrep /build/colorgrep
-    SAVE ARTIFACT /build/colorgrep AS LOCAL "build/linux/amd64/colorgrep"
+    SAVE ARTIFACT /build/colorgrep AS LOCAL "build/linux/arm64/colorgrep"
 
 colorgrep-all:
     BUILD +colorgrep-linux-amd64
