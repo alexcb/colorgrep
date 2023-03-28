@@ -80,6 +80,7 @@ func main() {
 	wordBoundary := false
 	showHelp := false
 	stripes := false
+	lineNumbers := false
 	colorNext := false
 	fileNext := false
 	file := ""
@@ -109,6 +110,8 @@ func main() {
 				switch short {
 				case 'h':
 					showHelp = true
+				case 'n':
+					lineNumbers = true
 				case 'i':
 					if insensitive {
 						die("two -i's in a row not supported\n")
@@ -206,6 +209,10 @@ func main() {
 				}
 			}
 			l = pat.re.ReplaceAllString(l, col+"$0"+nc)
+		}
+
+		if lineNumbers {
+			l = fmt.Sprintf("%d: %s", lineNum, l)
 		}
 
 		if stripes {
