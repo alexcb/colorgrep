@@ -92,8 +92,8 @@ colorgrep-linux-arm64:
 
 colorgrep-all:
     PIPELINE
-    TRIGGER push test
-    TRIGGER pr test
+    TRIGGER push pipetest
+    TRIGGER pr pipetest
     BUILD +colorgrep-linux-amd64
     BUILD +colorgrep-linux-arm64
     BUILD +colorgrep-darwin-amd64
