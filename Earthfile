@@ -1,5 +1,5 @@
 VERSION 0.7
-PROJECT alexcb/colorgrep
+PROJECT "alexcb-8633/colorgrep"
 FROM alpine:3.16
 
 deps:
