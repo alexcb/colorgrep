@@ -99,6 +99,7 @@ colorgrep-all:
     BUILD +colorgrep-darwin-amd64
     BUILD +colorgrep-darwin-arm64
 
+
 release:
     FROM node:13.10.1-alpine3.11
     RUN npm install -g github-release-cli@v1.3.1
