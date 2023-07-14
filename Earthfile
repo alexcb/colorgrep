@@ -1,4 +1,5 @@
-VERSION 0.6
+VERSION 0.7
+PROJECT alexcb/colorgrep
 FROM alpine:3.16
 
 deps:
@@ -90,6 +91,9 @@ colorgrep-linux-arm64:
     SAVE ARTIFACT /build/colorgrep AS LOCAL "build/linux/arm64/colorgrep"
 
 colorgrep-all:
+    PIPELINE
+    TRIGGER push test
+    TRIGGER pr test
     BUILD +colorgrep-linux-amd64
     BUILD +colorgrep-linux-arm64
     BUILD +colorgrep-darwin-amd64
